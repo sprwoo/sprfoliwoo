@@ -364,7 +364,6 @@ export default function Home() {
                 zIndex: cell >= 1 ? 0 : 100,
               }}
             >
-              {cell >= 1 ? "" : cell} 
             </div>
           ))
         )}
