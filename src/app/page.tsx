@@ -359,7 +359,7 @@ export default function Home() {
               key={`${rowIndex}-${colIndex}`}
               className="flex items-center justify-center"
               style={{
-                backgroundColor: cell >= 1 ? COLORS[cell] : "",
+                backgroundColor: COLORS[cell] ,
                 opacity: cell >= 1 ? 0.2 : 1,
                 zIndex: cell >= 1 ? 0 : 100,
               }}
