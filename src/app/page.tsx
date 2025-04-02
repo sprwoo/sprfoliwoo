@@ -152,7 +152,7 @@ export default function Home() {
 
         case "Space": // Hard drop
           setCurrentPosition((prev) => {
-            let nextPosition = { ...prev };
+            const nextPosition = { ...prev };
             while (canMoveTo({ ...nextPosition, y: nextPosition.y + 1 })) {
               nextPosition.y += 1;
             }
@@ -317,7 +317,7 @@ export default function Home() {
   return (
     <div className={`relative w-screen h-screen ${showText == true ? "block" : "hidden" }`}>
       <div className="absolute inset-0 w-full z-10 opacity-50">
-        <h1 className="ml-30 mt-30 text-3xl">Hey, I'm Daniel.</h1>
+        <h1 className="ml-30 mt-30 text-3xl">Hey, I&apos;m Daniel.</h1>
         <p className="ml-50 mt-5">I am a math student studying at the University of Waterloo.</p>
         <p className="ml-50 mt-5">I like to build random things from time to time.</p>
         <p className="ml-50 mt-5">Whenever I am not building or doing school work, I bum out and play Tekken 8 or Deadlock.</p>
