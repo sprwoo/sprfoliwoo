@@ -232,22 +232,24 @@ export default function Home() {
   useEffect(() => {
     if (!pieceActive && sevenBag.length > 0) {
       const tetrominoKey = sevenBag[0] as keyof typeof TETROMINOS;
+      const newPiece = TETROMINOS[tetrominoKey];
+      
+      const spawnPosition = tetrominoKey === "O"
+      ? { x: Math.floor(gridSize.cols / 2) - 1, y: 1 }
+      : { x: Math.floor(gridSize.cols / 2) - 2, y: 1 };
+
+      const isBlocked = !canMoveTo(newPiece, spawnPosition);
+      if (isBlocked) return;
+
+
+      setCurrentPosition(spawnPosition);
       setSevenBag(sevenBag.slice(1)); // Remove used piece
-      setCurrentPiece(TETROMINOS[tetrominoKey]);
-
-      if (tetrominoKey == "O") {
-        setCurrentPosition({ x: Math.floor(gridSize.cols / 2) - 1, y: 1 });
-      } else if (tetrominoKey == "I") {
-        setCurrentPosition({ x: Math.floor(gridSize.cols / 2) - 2, y: 1 });
-      } else {
-        setCurrentPosition({ x: Math.floor(gridSize.cols / 2) - 2, y: 1 });
-      }
-
+      setCurrentPiece(newPiece);
       setPieceActive(true);
     } else if (!pieceActive && sevenBag.length === 0) {
       generateSequence();
     }
-  }, [sevenBag, pieceActive]);
+  }, [sevenBag, pieceActive, gridArray]);
 
   const getDimensions = (piece: number[][]) => {
     let minX = piece[0].length, maxX = 0;
@@ -312,7 +314,7 @@ export default function Home() {
         }
         return nextPosition;
       });
-    }, 1000);
+    }, 1500);
 
     return () => clearInterval(interval);
   }, [currentPiece, gridArray]);
@@ -356,12 +358,12 @@ export default function Home() {
 
   return (
     <div className={`relative w-screen h-screen ${showText == true ? "block" : "hidden" }`}>
-      <div className="absolute inset-0 w-full z-10 opacity-50">
-        <h1 className="ml-30 mt-30 text-3xl">Hey, I&apos;m Daniel.</h1>
-        <p className="ml-50 mt-5">I am a math student studying at the University of Waterloo.</p>
-        <p className="ml-50 mt-5">I like to build random things from time to time.</p>
-        <p className="ml-50 mt-5">Whenever I am not building or doing school work, I bum out and play Tekken 8 or Deadlock.</p>
-        <p className="ml-50 mt-5">Feel free to reach out to me.</p>
+      <div className="absolute inset-0 w-full z-10 opacity-50 align-middle p-40 pt-60">
+        <h1 className="ml-30 mt-5 text-4xl">Hey, I&apos;m Daniel.</h1>
+        <p className="ml-50 mt-5 text-2xl">I am a math student studying at the University of Waterloo.</p>
+        <p className="ml-50 mt-5 text-2xl">I like to build random things from time to time.</p>
+        <p className="ml-50 mt-5 text-2xl">Whenever I am not building or doing school work, I bum out and play Tekken 8 or Deadlock.</p>
+        <p className="ml-50 mt-5 text-2xl">Feel free to reach out to me.</p>
         <div className="text-4xl text-center space-x-4">  
           <Link
               href="https://github.com/sprwoo"
