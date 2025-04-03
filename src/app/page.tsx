@@ -55,12 +55,11 @@ export default function Home() {
 
   useEffect(() => {
     const updateGridSize = () => {
-      const squareSize = 75; // Base size of squares
+      const squareSize = 100; // Base size of squares
       const cols = Math.floor(window.innerWidth / squareSize);
-      const rows = Math.floor(window.innerHeight / squareSize);
-      setGridSize({ cols, rows });
+      const rows = Math.floor(window.innerHeight / squareSize) + 2; // +2 for the overhead
+      setGridSize({ cols, rows}); 
 
-      // Create a 2D array based on cols and rows
       const newGridArray = Array.from({ length: rows }, () =>
         Array.from({ length: cols }, () => 0)
       );
@@ -82,8 +81,8 @@ export default function Home() {
     return () => window.removeEventListener("resize", updateGridSize);
   }, []);
 
-  const canMoveTo = (position: { x: number; y: number }) => {
-    return currentPiece.every((row, rIndex) =>
+  const canMoveTo = (newPiece: number[][], position: { x: number; y: number }) => {
+    return newPiece.every((row, rIndex) =>
       row.every((cell, cIndex) => {
         if (cell === 0) return true;
         const x = position.x + cIndex;
@@ -100,20 +99,68 @@ export default function Home() {
   };
 
   const rotatePiece = (direction: 1 | -1) => {
-    // Transpose the piece
-    const rotatedPiece = currentPiece[0].map((_, colIndex) =>
+    const transposedPiece = currentPiece[0].map((_, colIndex) =>
       currentPiece.map((row) => row[colIndex])
     );
 
-    const newPiece =
+    const rotatedPiece =
       direction === 1
-        ? rotatedPiece.map((row) => row.reverse())
-        : rotatedPiece.reverse();
+        ? transposedPiece.map((row) => row.reverse())
+        : transposedPiece.reverse();
 
-    if (canMoveTo(currentPosition)) {
-      setCurrentPiece(newPiece);
+    if (canMoveTo(rotatedPiece, currentPosition)) {
+      setCurrentPiece(rotatedPiece);
     }
   };
+  
+  const hardDrop = () => {
+    let maxDrop = gridSize.rows; // Start with the maximum possible drop distance.
+  
+    // Calculate the maximum drop distance for the current piece
+    currentPiece.forEach((row, rIndex) => {
+      row.forEach((cell, cIndex) => {
+        if (cell >= 1) {
+          const x = currentPosition.x + cIndex;
+          let y = currentPosition.y + rIndex;
+  
+          // Find the lowest valid position for this cell
+          while (y + 1 < gridSize.rows && gridArray[y + 1][x] === 0) {
+            y++;
+          }
+  
+          // Calculate the drop distance for this cell
+          const dropDistance = y - (currentPosition.y + rIndex);
+          maxDrop = Math.min(maxDrop, dropDistance); // Take the minimum drop distance
+        }
+      });
+    });
+  
+    // Update the position to the lowest valid position
+    const finalPosition = {
+      ...currentPosition,
+      y: currentPosition.y + maxDrop,
+    };
+  
+    // Lock the piece into the grid
+    setGridArray((prevGrid) => {
+      const newGrid = prevGrid.map((row) => [...row]);
+      currentPiece.forEach((row, rIndex) => {
+        row.forEach((cell, cIndex) => {
+          if (cell >= 1) {
+            const y = finalPosition.y + rIndex;
+            const x = finalPosition.x + cIndex;
+            if (y >= 0 && y < gridSize.rows && x >= 0 && x < gridSize.cols) {
+              newGrid[y][x] = cell;
+            }
+          }
+        });
+      });
+      return newGrid;
+    });
+    
+      // Move to the next piece
+      setPieceActive(false); // Mark the current piece as inactive
+    };
 
   useEffect(() => {
     const keyDownHandler = (e: KeyboardEvent) => {
@@ -123,7 +170,7 @@ export default function Home() {
         case "ArrowLeft": // Move piece left
           setCurrentPosition((prev) => {
             const nextPosition = { ...prev, x: prev.x - 1 };
-            if (canMoveTo(nextPosition)) {
+            if (canMoveTo(currentPiece, nextPosition)) {
               return nextPosition;
             }
             return prev;
@@ -133,7 +180,7 @@ export default function Home() {
         case "ArrowRight": // Move piece right
           setCurrentPosition((prev) => {
             const nextPosition = { ...prev, x: prev.x + 1 };
-            if (canMoveTo(nextPosition)) {
+            if (canMoveTo(currentPiece, nextPosition)) {
               return nextPosition;
             }
             return prev;
@@ -143,7 +190,7 @@ export default function Home() {
         case "ArrowDown": // Soft drop
           setCurrentPosition((prev) => {
             const nextPosition = { ...prev, y: prev.y + 1 };
-            if (canMoveTo(nextPosition)) {
+            if (canMoveTo(currentPiece, nextPosition)) {
               return nextPosition;
             }
             return prev;
@@ -151,14 +198,8 @@ export default function Home() {
           break;
 
         case "Space": // Hard drop
-          setCurrentPosition((prev) => {
-            const nextPosition = { ...prev };
-            while (canMoveTo({ ...nextPosition, y: nextPosition.y + 1 })) {
-              nextPosition.y += 1;
-            }
-            return nextPosition;
-          });
-          break;
+            hardDrop();
+            break;
 
         case "KeyZ": // Counterclockwise
           rotatePiece(-1);
@@ -195,11 +236,11 @@ export default function Home() {
       setCurrentPiece(TETROMINOS[tetrominoKey]);
 
       if (tetrominoKey == "O") {
-        setCurrentPosition({ x: Math.floor(gridSize.cols / 2) - 1, y: 0 });
+        setCurrentPosition({ x: Math.floor(gridSize.cols / 2) - 1, y: 1 });
       } else if (tetrominoKey == "I") {
-        setCurrentPosition({ x: Math.floor(gridSize.cols / 2) - 2, y: -1 });
+        setCurrentPosition({ x: Math.floor(gridSize.cols / 2) - 2, y: 1 });
       } else {
-        setCurrentPosition({ x: Math.floor(gridSize.cols / 2) - 2, y: 0 });
+        setCurrentPosition({ x: Math.floor(gridSize.cols / 2) - 2, y: 1 });
       }
 
       setPieceActive(true);
@@ -226,7 +267,6 @@ export default function Home() {
     return { width: maxX - minX + 1, height: maxY - minY + 1 };
   };
 
-  // Updated Movement Logic
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentPosition((prev) => {
@@ -294,7 +334,7 @@ export default function Home() {
       });
     }
 
-    return tempGrid;
+    return tempGrid.slice(2);
   };
 
 
@@ -350,7 +390,7 @@ export default function Home() {
         className="grid w-screen h-screen z-10"
         style={{
           gridTemplateColumns: `repeat(${gridSize.cols}, 1fr)`,
-          gridTemplateRows: `repeat(${gridSize.rows}, 1fr)`,
+          gridTemplateRows: `repeat(${gridSize.rows - 2}, 1fr)`,
         }}
       >
         {renderGrid().map((row, rowIndex) =>
