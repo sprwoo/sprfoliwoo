@@ -56,9 +56,12 @@ export default function Home() {
   useEffect(() => {
     const updateGridSize = () => {
       const squareSize = 100; // Base size of squares
-      const cols = Math.floor(window.innerWidth / squareSize);
-      const rows = Math.floor(window.innerHeight / squareSize) + 2; // +2 for the overhead
-      setGridSize({ cols, rows}); 
+      let cols = Math.floor(window.innerWidth / squareSize);
+      let rows = Math.floor(window.innerHeight / squareSize) + 2; // +2 for the overhead
+
+      if (cols % 2 !== 0) cols += 1;
+      if (rows % 2 !== 0) rows += 1;
+      setGridSize({ cols, rows });
 
       const newGridArray = Array.from({ length: rows }, () =>
         Array.from({ length: cols }, () => 0)
@@ -112,35 +115,35 @@ export default function Home() {
       setCurrentPiece(rotatedPiece);
     }
   };
-  
+
   const hardDrop = () => {
     let maxDrop = gridSize.rows; // Start with the maximum possible drop distance.
-  
+
     // Calculate the maximum drop distance for the current piece
     currentPiece.forEach((row, rIndex) => {
       row.forEach((cell, cIndex) => {
         if (cell >= 1) {
           const x = currentPosition.x + cIndex;
           let y = currentPosition.y + rIndex;
-  
+
           // Find the lowest valid position for this cell
           while (y + 1 < gridSize.rows && gridArray[y + 1][x] === 0) {
             y++;
           }
-  
+
           // Calculate the drop distance for this cell
           const dropDistance = y - (currentPosition.y + rIndex);
           maxDrop = Math.min(maxDrop, dropDistance); // Take the minimum drop distance
         }
       });
     });
-  
+
     // Update the position to the lowest valid position
     const finalPosition = {
       ...currentPosition,
       y: currentPosition.y + maxDrop,
     };
-  
+
     // Lock the piece into the grid
     setGridArray((prevGrid) => {
       const newGrid = prevGrid.map((row) => [...row]);
@@ -157,10 +160,10 @@ export default function Home() {
       });
       return newGrid;
     });
-    
-      // Move to the next piece
-      setPieceActive(false); // Mark the current piece as inactive
-    };
+
+    // Move to the next piece
+    setPieceActive(false); // Mark the current piece as inactive
+  };
 
   useEffect(() => {
     const keyDownHandler = (e: KeyboardEvent) => {
@@ -198,8 +201,8 @@ export default function Home() {
           break;
 
         case "Space": // Hard drop
-            hardDrop();
-            break;
+          hardDrop();
+          break;
 
         case "KeyZ": // Counterclockwise
           rotatePiece(-1);
@@ -233,10 +236,10 @@ export default function Home() {
     if (!pieceActive && sevenBag.length > 0) {
       const tetrominoKey = sevenBag[0] as keyof typeof TETROMINOS;
       const newPiece = TETROMINOS[tetrominoKey];
-      
+
       const spawnPosition = tetrominoKey === "O"
-      ? { x: Math.floor(gridSize.cols / 2) - 1, y: 1 }
-      : { x: Math.floor(gridSize.cols / 2) - 2, y: 1 };
+        ? { x: Math.floor(gridSize.cols / 2) - 1, y: 1 }
+        : { x: Math.floor(gridSize.cols / 2) - 2, y: 1 };
 
       const isBlocked = !canMoveTo(newPiece, spawnPosition);
       if (isBlocked) return;
@@ -357,35 +360,36 @@ export default function Home() {
   };
 
   return (
-    <div className={`relative w-screen h-screen ${showText == true ? "block" : "hidden" }`}>
-      <div className="absolute inset-0 w-full z-10 opacity-50 align-middle p-40 pt-60">
+    <div className={`relative w-screen h-screen ${showText == true ? "block" : "hidden"}`}>
+      <div className="absolute inset-0 w-full z-10 align-middle p-40 pt-60"
+        style={{ color: "#878472" }}>
         <h1 className="ml-30 mt-5 text-4xl">Hey, I&apos;m Daniel.</h1>
         <p className="ml-50 mt-5 text-2xl">I am a math student studying at the University of Waterloo.</p>
         <p className="ml-50 mt-5 text-2xl">I like to build random things from time to time.</p>
         <p className="ml-50 mt-5 text-2xl">Whenever I am not building or doing school work, I bum out and play Tekken 8 or Deadlock.</p>
         <p className="ml-50 mt-5 text-2xl">Feel free to reach out to me.</p>
-        <div className="text-4xl text-center space-x-4">  
+        <div className="m-5 text-6xl text-center space-x-4">
           <Link
-              href="https://github.com/sprwoo"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <FontAwesomeIcon
-                icon={faGithub}
-                className="icon text-gray-300 hover:text-gray transition-all duration-200 ease-in-out hover:scale-110"
-              />
-            </Link>
-            <Link
-              href="https://linkedin.com/in/yangiel/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <FontAwesomeIcon
-                icon={faLinkedin}
-                className="icon text-gray-300 hover:text-gray transition-all duration-200 ease-in-out hover:scale-110"
-              />
-            </Link>
-          </div>
+            href="https://github.com/sprwoo"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <FontAwesomeIcon
+              icon={faGithub}
+              className="p-5 icon hover:text-gray transition-all duration-200 ease-in-out hover:scale-110"
+            />
+          </Link>
+          <Link
+            href="https://linkedin.com/in/yangiel/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <FontAwesomeIcon
+              icon={faLinkedin}
+              className="p-5 icon hover:text-gray transition-all duration-200 ease-in-out hover:scale-110"
+            />
+          </Link>
+        </div>
       </div>
 
       <div
@@ -401,7 +405,7 @@ export default function Home() {
               key={`${rowIndex}-${colIndex}`}
               className="flex items-center justify-center"
               style={{
-                backgroundColor: COLORS[cell] ,
+                backgroundColor: COLORS[cell],
                 opacity: cell >= 1 ? 0.2 : 1,
                 zIndex: cell >= 1 ? 0 : 100,
               }}
