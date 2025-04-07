@@ -376,7 +376,7 @@ export default function Home() {
               />
             </Link>
             <Link
-              href="https://linkedin.com/in/yangielll/"
+              href="https://linkedin.com/in/yangiel/"
               target="_blank"
               rel="noopener noreferrer"
             >
