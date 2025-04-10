@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGithub } from "@fortawesome/free-brands-svg-icons";
 import { faLinkedin } from "@fortawesome/free-brands-svg-icons/faLinkedin";
+import { Analytics } from "@vercel/analytics/react"
 
 const TETROMINOS = {
   'I': [
@@ -414,6 +415,7 @@ export default function Home() {
           ))
         )}
       </div>
+      <Analytics />
     </div>
   );
 }
